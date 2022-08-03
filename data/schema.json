@@ -1,0 +1,75 @@
+{
+
+  “classes”: [
+
+{
+
+			"class": "Author",
+
+			"description": "The name of blog post author",
+
+			"properties": [{
+
+				"name": "name",
+
+				"description": "Authors name",
+
+				"dataType": ["string"]
+
+			}]
+
+		},
+
+		{
+
+			"class": "BlogPost",
+
+			"description": "A blog post",
+
+			"properties": [{
+
+					"name": "title",
+
+					"description": "The blog post title",
+
+					"dataType": ["string"]
+
+				},
+
+				{
+
+					"name": "body",
+
+					"description": "The body content of the blog post",
+
+					"dataType": ["text"]
+
+				},
+
+				{
+
+					"name": "authoredBy",
+
+					"description": "The author of the blog post",
+
+					"dataType": ["Author"]
+
+				},
+
+				{
+
+					"name": "timestamp",
+
+					"description": "Publication time of the blog post",
+
+					"dataType": ["date"]
+
+				}
+
+			]
+
+		}
+
+  ]
+
+}
