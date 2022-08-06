@@ -35,6 +35,7 @@ def list_authors():
      }
     }"""
     result = client.query.raw(query)
+    print("[bold white]Here is the lists of all authors:[/bold white]")
     print_json(data=result)
 
 
@@ -70,6 +71,7 @@ def list_posts():
 
     """
     result = client.query.raw(query)
+    print("[bold white]Here is the lists of all blog posts:[/bold white]")
     print_json(data=result)
 
 
@@ -97,6 +99,7 @@ def search_post():
     """
     typer.echo(f"Status: Searching for {post!r} in blog posts")
     result = client.query.raw(query)
+    print("[bold white]Here is the blog post search result:[/bold white]")
     print_json(data=result)
 
 
@@ -123,6 +126,7 @@ def search_author():
       }}
     """
     typer.echo(f"Status: Searching for {author!r} in authors")
+    print("[bold white]Here is the author search result:[/bold white]")
     result = client.query.raw(query)
     print_json(data=result)
 

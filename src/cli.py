@@ -28,7 +28,7 @@ menu_options = {
 
 def print_menu_options():
     print(
-        "Enter the following commands in the displayed order to set up the test database and and to be able to query it"
+        "Enter the following commands in the displayed order to set up the test database and to be able to query it"
     )
     print(f"[bold purple]{'-' *  79}[/bold purple]")
     print("[bold white]Setup database[/bold white]")
@@ -60,6 +60,7 @@ def menu():
         except:
             print("[bold red]Wrong input. Please enter a number...[/bold red]")
         if option == 0:
+            print("[bold orange]Exiting the program now![/bold orange]")
             raise typer.Exit()
         else:
             try:
