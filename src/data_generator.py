@@ -1,21 +1,21 @@
-#!/usr/bin/env python
-
 import csv
 import uuid
 import random
 from faker import Faker
+from rich.progress import track
 
-RECORD_COUNT = 10000
+RECORD_COUNT = 10_000
 
 faker = Faker()
 
 
-def write_to_csv():
-    with open("./publishing_data.csv", "w", newline="") as csvfile:
+def generate_data():
+    total = 0
+    with open("data/publishing_data.csv", "w", newline="") as csvfile:
         fieldnames = ["id", "title", "body", "author"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        for i in range(RECORD_COUNT):
+        for i in track(range(RECORD_COUNT), description="Generating data records..."):
             id = uuid.uuid3(uuid.NAMESPACE_DNS, faker.url())
             writer.writerow(
                 {
@@ -25,7 +25,5 @@ def write_to_csv():
                     "author": faker.name(),
                 }
             )
-
-
-if __name__ == "__main__":
-    write_to_csv()
+            total += 1
+    print(f"Generated {total} records.")

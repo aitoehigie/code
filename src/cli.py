@@ -1,79 +1,73 @@
 """This module provides the Weaviate tutorial CLI."""
 # src/cli.py
+from subprocess import call
 
-from pathlib import Path
-from typing import Optional
-import json
 import typer
-import weaviate
+from rich import print
+from rich.console import Console
+from rich.table import Table
 
-client = weaviate.Client("http://localhost:8080")
-
+import setup_database
+import tutorial
 
 app = typer.Typer()
+app.add_typer(setup_database.app, name="setup-database")
+app.add_typer(tutorial.app, name="tutorial")
+
+menu_options = {
+    1: setup_database.generate_data,
+    2: lambda: call(["weaviate_tutorial", "setup-database", "upload-schema"]),
+    3: setup_database.add_single_data,
+    4: setup_database.batch_import_data,
+    5: tutorial.list_authors,
+    6: tutorial.list_posts,
+    7: tutorial.search_author,
+    8: tutorial.search_post,
+}
 
 
-@app.command()
-def main():
-    app()
-
-
-@app.command()
-def upload_schema(
-    file_name: Optional[str] = typer.Option(
-        default="data/schema.json",
-        prompt=True,
-        help="Enter the full path to your schema file",
+def print_menu_options():
+    print(
+        "Enter the following commands in the displayed order to set up the test database and and to be able to query it"
     )
-):
-    typer.echo(f"Uploading schema...")
-    try:
-        with open(file_name, "r") as file:
-            schema = json.load(file)
-        client.schema.create(schema)
-        typer.echo(f"Schema uploaded!")
-    except Exception as e:
-        print(f"An exception occured. Details: {e}")
+    print(f"[bold purple]{'-' *  79}[/bold purple]")
+    print("[bold white]Setup database[/bold white]")
+    print("Enter [bold yellow]'1'[/bold yellow]: To generate test data")
+    print("Enter [bold yellow]'2'[/bold yellow]: To upload the schema")
+    print("Enter [bold yellow]'3'[/bold yellow]: To import a single data record")
+    print("Enter [bold yellow]'4'[/bold yellow]: To import bulk test data records")
+    print(f"[bold purple]{'*' *  79}[/bold purple]")
+    print("[bold white]Tutorial[/bold white]")
+    print("Enter [bold yellow]'5'[/bold yellow]: To list all authors")
+    print("Enter [bold yellow]'6'[/bold yellow]: To list all blog posts")
+    print("Enter [bold yellow]'7'[/bold yellow]: To search for authors")
+    print("Enter [bold yellow]'8'[/bold yellow]: To search for blog posts")
+    print("Enter [bold yellow]0[/bold yellow]: To exit the application")
+    print(f"[bold purple]{'*' *  79}[/bold purple]")
 
 
 @app.command()
-def create_data():
-    typer.echo("Creating data")
-
-
-@app.command()
-def batch_import_data(
-    file_name: Optional[str] = typer.Option(
-        default="data/publishing_data.csv",
-        prompt=True,
-        help="Enter the full path to the data file you want to populate your database with",
+def menu():
+    print(f"[bold purple]{'*' *  79}[/bold purple]")
+    print(
+        ":boom: [bold green]:partying_face: Welcome to the Getting Started with :computer: Weaviate Tutorial :book: [/bold green] :boom:"
     )
-):
-    typer.echo("Batch importing data")
-    try:
-        data = pd.read_csv("data/publishing_data.csv", index_col=0)
-    except Exception as e:
-        print(f"An exception occured. Details: {e}")
-
-
-@app.command()
-def list_authors():
-    typer.echo("Listing authors")
-
-
-@app.command()
-def list_posts():
-    typer.echo("Listing posts")
-
-
-@app.command()
-def search_author():
-    typer.echo("Searching for author")
-
-
-@app.command()
-def search_post():
-    typer.echo("Searching for post")
+    print(f"[bold purple]{'*' *  79}[/bold purple]")
+    while True:
+        print_menu_options()
+        try:
+            option = int(input("Enter your choice: "))
+        except:
+            print("[bold red]Wrong input. Please enter a number...[/bold red]")
+        if option == 0:
+            raise typer.Exit()
+        else:
+            try:
+                menu_options.get(option)()
+            except:
+                print(
+                    "[bold red]Wrong input. Please enter a number from 0 to 9[/bold red]"
+                )
 
 
 @app.command()
