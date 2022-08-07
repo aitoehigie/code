@@ -7,7 +7,7 @@ import json
 import typer
 import weaviate
 import pandas as pd
-from rich import print_json
+from rich import print_json, print
 from pprint import pprint
 
 client = weaviate.Client("http://localhost:8080")

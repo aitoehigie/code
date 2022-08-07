@@ -67,7 +67,7 @@ def menu():
                 menu_options.get(option)()
             except:
                 print(
-                    "[bold red]Wrong input. Please enter a number from 0 to 9[/bold red]"
+                    "[bold red]Wrong input. Please enter a number from 0 to 8[/bold red]"
                 )
 
 

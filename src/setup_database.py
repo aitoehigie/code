@@ -8,12 +8,16 @@ from typing import Optional
 import json
 import typer
 import weaviate
+from weaviate.util import generate_uuid5
 import pandas as pd
+import csv
 from faker import Faker
+from rich.progress import track
 
 from data_generator import generate_data as gd
 
 client = weaviate.Client("http://localhost:8080")
+client.batch.configure(batch_size=100, dynamic=False, timeout_retries=3, callback=None)
 
 fake = Faker()
 
@@ -76,6 +80,47 @@ def add_single_data():
     typer.echo("Status: Single record imported successfully!")
 
 
+def add_blog_post(batch, blog_post_data):
+    blog_post_object = {
+        "title": blog_post_data.title,
+        "body": blog_post_data.body.replace("\n", ""),
+    }
+    blog_post_uuid = blog_post_data.uuid
+    # add article to the object batch request
+    batch.add_data_object(
+        data_object=blog_post_object, class_name="BlogPost", uuid=blog_post_uuid
+    )
+    return blog_post_uuid
+
+
+def add_author(batch, name, created_authors):
+    if name in created_authors:
+        return created_authors[name]
+    author_uuid = generate_uuid5(name)
+    batch.add_data_object(
+        data_object={"name": name}, uuid=author_uuid, class_name="Author"
+    )
+    created_authors[name] = author_uuid
+    return author_uuid
+
+
+def add_cross_references(batch, blog_post_uuid, author_uuid):
+    batch.add_reference(
+        from_object_uuid=author_uuid,
+        from_object_class_name="Author",
+        from_property_name="wrotePosts",
+        to_object_uuid=blog_post_uuid,
+        to_object_class_name="BlogPost",
+    )
+    batch.add_reference(
+        from_object_uuid=blog_post_uuid,
+        from_object_class_name="BlogPost",
+        from_property_name="authoredBy",
+        to_object_uuid=author_uuid,
+        to_object_class_name="Author",
+    )
+
+
 @app.command()
 def batch_import_data(
     file_name: Optional[str] = typer.Option(
@@ -84,10 +129,23 @@ def batch_import_data(
         help="Enter the full path to the data file you want to populate your database with",
     )
 ):
-    typer.echo("Batch importing data...")
+    typer.echo("Status: Batch importing data...")
+    created_authors = {}
+    count = 0
     try:
-        data = pd.read_csv("data/publishing_data.csv", index_col=0)
-        typer.echo("Data imported!")
+        bulk_data = pd.read_csv("data/publishing_data.csv")
+        with client.batch as batch:
+            for index, row in track(bulk_data.iterrows()):
+                blog_post_uuid = add_blog_post(batch, blog_post_data=row)
+                author_uuid = add_author(batch, row.author, created_authors)
+                add_cross_references(
+                    batch, blog_post_uuid=blog_post_uuid, author_uuid=author_uuid
+                )
+                count += 1
+                if index % 50 == 0:
+                    batch.create_objects()
+                    batch.create_references()
+        typer.echo(f"Status: {count} Data data records were imported!")
     except Exception as e:
         print(f"An exception occured. Details: {e}")
 
